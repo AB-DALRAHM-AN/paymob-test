@@ -1,5 +1,10 @@
-import DeclinedPage from './declined-page';
+import { Suspense } from "react";
+import DeclinedPage from "./declined-page";
 
 export default function PaymentDeclinedPage() {
-  return <DeclinedPage />;
+  return (
+    <Suspense>
+      <DeclinedPage />
+    </Suspense>
+  );
 }
