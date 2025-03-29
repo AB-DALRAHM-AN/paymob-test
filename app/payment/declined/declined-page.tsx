@@ -14,11 +14,15 @@ export default function PaymentDeclinedPage() {
     // Check if there are transaction details in the URL
     const txnId = searchParams.get("txn_id");
     const orderId = searchParams.get("order_id");
+    const amount = searchParams.get("amount");
+    const currency = searchParams.get("currency");
 
     if (txnId && orderId) {
       setTransactionInfo({
         transactionId: txnId,
         orderId: orderId,
+        amount: amount,
+        currency: currency
       });
     }
 
@@ -104,6 +108,11 @@ export default function PaymentDeclinedPage() {
             <p>
               <strong>Order ID:</strong> {transactionInfo.orderId}
             </p>
+            {transactionInfo.amount && transactionInfo.currency && (
+              <p>
+                <strong>Amount:</strong> {(parseInt(transactionInfo.amount) / 100).toFixed(2)} {transactionInfo.currency}
+              </p>
+            )}
           </div>
         )}
 
