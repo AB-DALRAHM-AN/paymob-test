@@ -88,7 +88,7 @@ export async function POST(request: Request) {
       return NextResponse.json({
         status: "success",
         message: "Payment successful",
-        redirect: "/payment/success",
+        redirect: `/payment/success?txn_id=${transactionId}&order_id=${orderId}&amount=${obj.amount_cents}&currency=${obj.currency}`,
       });
     } else {
       console.log(
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
       return NextResponse.json({
         status: "error",
         message: "Payment failed",
-        redirect: "/payment/declined",
+        redirect: `/payment/declined?txn_id=${transactionId}&order_id=${orderId}&amount=${obj.amount_cents}&currency=${obj.currency}`,
       });
     }
   } catch (error) {

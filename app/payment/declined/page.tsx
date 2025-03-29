@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import DeclinedPage from "./declined-page";
+import PaymentDeclinedContent from "./page-content";
 
 export default function PaymentDeclinedPage() {
   return (
     <Suspense>
-      <DeclinedPage />
+      <PaymentDeclinedContent />
     </Suspense>
   );
 }

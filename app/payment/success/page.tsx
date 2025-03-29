@@ -1,11 +1,10 @@
 import { Suspense } from "react";
-import SuccessPage from "./success-page";
+import PaymentSuccessContent from "./page-content";
 
 export default function PaymentSuccessPage() {
   return (
     <Suspense>
-      {" "}
-      <SuccessPage />{" "}
+      <PaymentSuccessContent />
     </Suspense>
   );
 }
