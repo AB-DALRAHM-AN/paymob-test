@@ -74,15 +74,14 @@ export async function POST(request: Request) {
       success,
     } = obj;
 
-    // Process the payment status
-    // In a real application, you would update your database with the payment status
     if (success) {
       console.log(
         `Payment successful for order ${orderId}, transaction ID: ${transactionId}`
       );
       // Here you would update your order status in the database
-      // Example: await db.orders.update({ where: { id: orderId }, data: { status: 'paid' } });
-
+      console.log(
+        `Redirecting to success page for order ${orderId}, transaction ID: ${transactionId}, Sending Data to DB with Data: ${JSON.stringify(obj)}`
+      )
       // First acknowledge receipt of the webhook with a 200 response
       // This is important for Paymob to know the webhook was received
       return NextResponse.json({
