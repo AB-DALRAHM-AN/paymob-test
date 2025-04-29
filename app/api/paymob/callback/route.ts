@@ -1,4 +1,3 @@
-// app/api/paymob/callback/route.ts
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 
@@ -153,7 +152,9 @@ export async function POST(request: Request) {
       });
     } else {
       console.log(
-        `Payment failed for order ${orderId}, transaction ID: ${transactionId}`
+        `Payment ${
+          success ? "successful" : "failed"
+        } for order ${orderId}, transaction ID: ${transactionId}`
       );
       // Here you would update your order status in the database
       // Example: await db.orders.update({ where: { id: orderId }, data: { status: 'failed' } });
