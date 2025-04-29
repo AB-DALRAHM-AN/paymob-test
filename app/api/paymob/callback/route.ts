@@ -66,8 +66,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify HMAC signature from the request body
-    const receivedHmac = transactionData.hmac; // HMAC is in the body for callbacks
+    // Verify HMAC signature from the URL query parameters
+    const url = new URL(request.url);
+    const receivedHmac = url.searchParams.get("hmac"); // HMAC is in the query params for callbacks
+
     if (receivedHmac && process.env.PAYMOB_HMAC_SECRET) {
       const isValid = verifyHmacSignature(
         obj,
@@ -77,6 +79,41 @@ export async function POST(request: Request) {
 
       if (!isValid) {
         console.error("HMAC signature verification failed");
+        // Log details for debugging the mismatch
+        console.log("Received HMAC (Query Param):", receivedHmac);
+        // Reconstruct the data string exactly as done in verifyHmacSignature for logging
+        const dataStringForLog =
+          obj.amount_cents +
+          obj.created_at +
+          obj.currency +
+          obj.error_occured +
+          obj.has_parent_transaction +
+          obj.id +
+          obj.integration_id +
+          obj.is_3d_secure +
+          obj.is_auth +
+          obj.is_capture +
+          obj.is_refunded +
+          obj.is_standalone_payment +
+          obj.is_voided +
+          obj.order.id + // Note: nested object access
+          obj.owner +
+          obj.pending +
+          obj.source_data.pan + // Note: nested object access
+          obj.source_data.sub_type + // Note: nested object access
+          obj.source_data.type + // Note: nested object access
+          obj.success;
+        const calculatedHmacForLog = crypto
+          .createHmac("sha512", process.env.PAYMOB_HMAC_SECRET)
+          .update(dataStringForLog)
+          .digest("hex");
+        console.log("Data String (from Body 'obj'):", dataStringForLog);
+        console.log("Calculated HMAC (from Body 'obj'):", calculatedHmacForLog);
+        console.log(
+          "HMAC Secret Used (first 5 chars):",
+          process.env.PAYMOB_HMAC_SECRET?.substring(0, 5)
+        ); // Log part of the secret for verification
+
         return NextResponse.json(
           { status: "error", message: "Invalid signature" },
           { status: 401 }
@@ -86,7 +123,7 @@ export async function POST(request: Request) {
       console.log("HMAC signature verified successfully");
     } else {
       console.warn(
-        "HMAC secret not configured or HMAC not provided in callback body"
+        "HMAC secret not configured or HMAC not provided in callback URL query parameters"
       );
     }
 
