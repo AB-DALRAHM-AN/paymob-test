@@ -2,15 +2,36 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 
-// Helper function to verify HMAC signature
+// Helper function to verify HMAC signature for callback (Transaction Webhook)
+// See: https://docs.paymob.com/docs/hmac-calculation#transaction-callback-webhook
 function verifyHmacSignature(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  payload: any,
+  payloadObj: any,
   hmacSecret: string,
   receivedHmac: string
 ): boolean {
-  // Create a string representation of the payload
-  const dataString = JSON.stringify(payload);
+  // Concatenate the required fields in the specified order
+  const dataString =
+    payloadObj.amount_cents +
+    payloadObj.created_at +
+    payloadObj.currency +
+    payloadObj.error_occured +
+    payloadObj.has_parent_transaction +
+    payloadObj.id +
+    payloadObj.integration_id +
+    payloadObj.is_3d_secure +
+    payloadObj.is_auth +
+    payloadObj.is_capture +
+    payloadObj.is_refunded +
+    payloadObj.is_standalone_payment +
+    payloadObj.is_voided +
+    payloadObj.order.id + // Note: nested object access
+    payloadObj.owner +
+    payloadObj.pending +
+    payloadObj.source_data.pan + // Note: nested object access
+    payloadObj.source_data.sub_type + // Note: nested object access
+    payloadObj.source_data.type + // Note: nested object access
+    payloadObj.success;
 
   // Calculate HMAC using the secret
   const calculatedHmac = crypto
@@ -45,13 +66,13 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify HMAC signature if provided in headers
-    const hmacHeader = request.headers.get("hmac");
-    if (hmacHeader && process.env.PAYMOB_HMAC_SECRET) {
+    // Verify HMAC signature from the request body
+    const receivedHmac = transactionData.hmac; // HMAC is in the body for callbacks
+    if (receivedHmac && process.env.PAYMOB_HMAC_SECRET) {
       const isValid = verifyHmacSignature(
         obj,
         process.env.PAYMOB_HMAC_SECRET,
-        hmacHeader
+        receivedHmac
       );
 
       if (!isValid) {
@@ -64,7 +85,9 @@ export async function POST(request: Request) {
 
       console.log("HMAC signature verified successfully");
     } else {
-      console.warn("No HMAC signature provided or HMAC secret not configured");
+      console.warn(
+        "HMAC secret not configured or HMAC not provided in callback body"
+      );
     }
 
     // Extract transaction details
@@ -80,8 +103,10 @@ export async function POST(request: Request) {
       );
       // Here you would update your order status in the database
       console.log(
-        `Redirecting to success page for order ${orderId}, transaction ID: ${transactionId}, Sending Data to DB with Data: ${JSON.stringify(obj)}`
-      )
+        `Redirecting to success page for order ${orderId}, transaction ID: ${transactionId}, Sending Data to DB with Data: ${JSON.stringify(
+          obj
+        )}`
+      );
       // First acknowledge receipt of the webhook with a 200 response
       // This is important for Paymob to know the webhook was received
       return NextResponse.json({
