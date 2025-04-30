@@ -67,13 +67,19 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const searchParams = url.searchParams;
 
+    // Log the full URL and all parameters immediately for debugging
+    console.log("Full request URL received:", request.url);
+    console.log(
+      "All query parameters received:",
+      Object.fromEntries(searchParams.entries())
+    );
+
     // Extract transaction details from query parameters
     const success = searchParams.get("success");
     const txnId = searchParams.get("id") || searchParams.get("txn_id");
     const orderId = searchParams.get("order") || searchParams.get("order_id");
     const amount = searchParams.get("amount_cents");
     const currency = searchParams.get("currency");
-    const integrationId = searchParams.get("integration_id");
 
     // Verify HMAC signature if secret is configured
     const hmacSecret = process.env.PAYMOB_HMAC_SECRET;
@@ -96,16 +102,16 @@ export async function GET(request: Request) {
       );
     }
 
-    // Log the transaction response for debugging
-    console.log("Transaction response received (after potential HMAC check):", {
-      success,
-      txnId,
-      orderId,
-      amount,
-      currency,
-      integrationId,
-      allParams: Object.fromEntries(searchParams.entries()),
-    });
+    // Log the transaction response for debugging (already includes all params)
+    // console.log("Transaction response received (after potential HMAC check):", {
+    //   success,
+    //   txnId,
+    //   orderId,
+    //   amount,
+    //   currency,
+    //   integrationId,
+    //   allParams: Object.fromEntries(searchParams.entries()),
+    // });
 
     // Determine the redirect URL based on the transaction status
     let redirectUrl: string;
